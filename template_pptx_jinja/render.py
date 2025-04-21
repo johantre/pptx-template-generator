@@ -69,23 +69,23 @@ class PPTXRendering:
         while i < len(runs):
             text = runs[i].text or ""
             if "{{" in text:
-                # 找到 '{{'，开始合并
+                # Found '{{', start merging
                 merged = text
                 j = i + 1
-                # 不断把后续 run 加过来，直到找到 '}}' 或跑完
+                # Keep adding subsequent runs until '}}' found or end reached
                 while j < len(runs) and "}}" not in merged:
                     merged += runs[j].text or ""
                     j += 1
                 if "}}" in merged:
-                    # 合并成功：把 merged 放到第 i 个 run
+                    # Merge successful: put merged content in the i-th run
                     runs[i].text = merged
-                    # 清空中间那些 run 的文本，只保留它们的格式
+                    # Clear text in intermediate runs while preserving their formatting
                     for k in range(i + 1, j):
                         runs[k].text = ""
-                    # 跳过已处理的片段
+                    # Skip processed segments
                     i = j
                 else:
-                    # 没找到闭合就退出
+                    # Exit if no closing tag found
                     break
             else:
                 i += 1
