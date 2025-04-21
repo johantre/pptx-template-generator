@@ -61,8 +61,8 @@ class PPTXRendering:
             self._render_paragraph(paragraph)
     def _merge_placeholder_runs(self, paragraph):
         """
-        把跨多个 run 被拆开的 {{ … }} 占位符合并到第一个 run，
-        并清空后续碎片 run 的文本，保留它们的格式。
+        Merge {{...}} placeholders split across multiple runs into the first run,
+        clear text in subsequent fragment runs while preserving their formatting.
         """
         runs = paragraph.runs
         i = 0
@@ -91,9 +91,9 @@ class PPTXRendering:
                 i += 1
 
     def _render_paragraph(self, paragraph):
-        # 1⃣️ 先把跨 run 的 {{…}} 合并
+        # 1. First merge {{...}} across runs
         self._merge_placeholder_runs(paragraph)
-        # 2⃣️ 再按 run 渲染（你的旧逻辑）
+        # 2. Then render by run (original logic)
         for run in paragraph.runs:
             self._render_run(run)
 
