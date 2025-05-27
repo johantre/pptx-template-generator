@@ -59,10 +59,45 @@ class PPTXRendering:
     def _render_text_frame(self, text_frame):
         for paragraph in text_frame.paragraphs:
             self._render_paragraph(paragraph)
+    def _merge_placeholder_runs(self, paragraph):
+        """
+        Merge {{...}} placeholders split across multiple runs into the first run,
+        clear text in subsequent fragment runs while preserving their formatting.
+        """
+        runs = paragraph.runs
+        i = 0
+        while i < len(runs):
+            text = runs[i].text or ""
+            if "{{" in text:
+                # Found '{{', start merging
+                merged = text
+                j = i + 1
+                # Keep adding subsequent runs until '}}' found or end reached
+                while j < len(runs) and "}}" not in merged:
+                    merged += runs[j].text or ""
+                    j += 1
+                if "}}" in merged:
+                    # Merge successful: put merged content in the i-th run
+                    runs[i].text = merged
+                    # Clear text in intermediate runs while preserving their formatting
+                    for k in range(i + 1, j):
+                        runs[k].text = ""
+                    # Skip processed segments
+                    i = j
+                else:
+                    # Exit if no closing tag found
+                    break
+            else:
+                i += 1
 
     def _render_paragraph(self, paragraph):
+        # 1. First merge {{...}} across runs
+        self._merge_placeholder_runs(paragraph)
+        # 2. Then render by run (original logic)
         for run in paragraph.runs:
             self._render_run(run)
+
+
 
     def _render_table(self, table):
         self._prepare_table(table)
