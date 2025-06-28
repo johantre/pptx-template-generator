@@ -7,12 +7,11 @@ class Template:
     def __init__(self, template_path):
         self.template_path = template_path
         self.presentation = None
-
-        self.env = Environment(loader=FileSystemLoader("."))
-        self.env.add_extension(SplitSlideExtension)
+        self.env = Environment(loader=FileSystemLoader("."))  # of correcte pad
 
     def render(self, context):
         # Zet context en split config in globals voor de extension
+        self.env.add_extension(SplitSlideExtension)
         self.env.globals['context'] = context
         self.env.globals['split_config'] = context.get('split', {})
 

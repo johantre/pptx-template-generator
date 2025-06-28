@@ -13,6 +13,7 @@ def build_rendered_presentation(template_path, context, env):
 
     collections = context.get("collections", {})
     split_config = context.get("split", {})
+    variables = context.get("variables", {})
 
     slides_to_remove = []
 
@@ -25,14 +26,16 @@ def build_rendered_presentation(template_path, context, env):
 
             for chunk in chunks:
                 new_slide = duplicate_slide(pres, slide)
+                # Hier:
                 render_slide_with_context(new_slide, {
-                    **context["variables"],
-                    collection_name: chunk
+                    **variables,
+                    **collections,
+                    "_splitslide_chunk": chunk  # ✅ veilige, tijdelijke naam
                 }, env)
 
             slides_to_remove.append(slide)
         else:
-            render_slide_with_context(slide, context["variables"], env)
+            render_slide_with_context(slide, {**variables, **collections}, env)
 
     for slide in slides_to_remove:
         rId = pres.slides._sldIdLst[pres.slides.index(slide)].rId
@@ -65,7 +68,9 @@ def render_slide_with_context(slide, context, env):
             if "{{" in text or "{%" in text:
                 try:
                     template = env.from_string(text)
-                    rendered = template.render(context)
+                    rendered = template.render(**context)
+                    print("Template text:", text)
+                    print(f"Rendered output: {rendered}")
                     shape.text_frame.clear()
                     shape.text_frame.text = rendered
                 except Exception as e:
